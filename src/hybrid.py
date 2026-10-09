@@ -14,6 +14,7 @@ See docs/ir.md for the IR format.
 """
 
 import json
+import re
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
@@ -45,10 +46,11 @@ IR_SPEC = """IR format (JSON):
   "objective": {"maximize": "<expression>"}  or  {"minimize": "<expression>"}   OPTIONAL: ONLY for optimisation problems
 }
 Expressions may use: integer numbers, variable names, + - * // %, == != < <= > >=, and, or, not, abs(), parentheses.
+String and symbolic values are FORBIDDEN: {{values: ["A", "B"]}}, ["A", "B"].
 Inside arithmetic a comparison counts as 1 (true) or 0 (false), e.g. "(A == 1) + (B == 1) == 1".
-Variable names must be identifiers: letters, digits and underscores only, no spaces."""
+Variable names must be identifiers: letters, digits and underscores only, no spaces, e.g., meeting_kickoff, role_alice."""
 
-SYSTEM = "You translate logic puzzles into a formal constraint representation. You answer only with JSON."
+SYSTEM = "You translate logic puzzles into a formal constraint representation. You answer only with JSON. You arent a programmer just translator."
 
 # TODO(team): this prompt is the heart of the hybrid pipeline. Things worth considering:
 #   * how should the model choose variables? (one variable per entity? per attribute value?)
@@ -56,59 +58,97 @@ SYSTEM = "You translate logic puzzles into a formal constraint representation. Y
 #   * facts that the text does not state but that the model must know (calendar, working week, ...);
 #   * a worked example (few-shot) on a puzzle that is NOT in your set;
 #   * how to encode knights and knaves: a statement S by person X becomes  X == (S).
-FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle.
+FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle. Output ONLY valid JSON matching the IR specification.
+
 Puzzle:
 {text}
 
-Encoding Rules:
-1. Variable Domains:
-    - All variable domains MUST be integers [0, N-1] or explicit integer sets;
-    - Single integer values are FORBIDDEN;
-    - String domains and symbolic values are FORBIDDEN;
-    - Variable names must follow snake_case identifiers representing entities or attributes (e.g., meeting_kickoff, shift_alice).
-
-2. Temporal Indexing:
-    - Order days, slots, and positions sequentially from 0 to N-1;
-    - For sub-day periods: day = slot // K, period = slot % K (where K is periods per day).
-
-3. Formalization specs:
-    - Next to:
-        Immediately after: B == A + 1;
-        Unordered adjacent: abs(A - B) == 1.
-
-    - Between (B is between A and C):
-        Fixed order: A < B and B < C;
-        Any order: (A < B and B < C) or (C < B and B < A).
-
-    - At most:
-        Maximum value or position: A <= K;
-        Distance limit: abs(A - B) <= K;
-        Count limit: (cond1) + (cond2) <= 1.
-
-    - Fewer:
-        Strict less than: count_A < count_B;
-        Exactly K fewer: count_A == count_B - K;
-        At most K fewer: count_B - count_A <= K and count_A < count_B;
-        Total count threshold: (cond1) + (cond2) + (cond3) < K.
-        
-    - At least:
-        Minimum value or position: A >= K;
-        Minimum distance: abs(A - B) >= K;
-        Minimum count: (cond1) + (cond2) + (cond3) >= K.
-
-5. constraints usage rules:
-    - A statement S made by person X MUST be encoded as: X == (S);
-    - Declare mutual exclusivity via "all_different" groups rather than multiple != clauses.
-
 {ir_spec}
+
+Encoding Puzzle Rules:
+
+1. Logic & Arithmetic:
+   - Use relational operators (<, <=, >, >=, +, -, //, %) instead of enumerating concrete cases.
+   - If a TOTAL VALUE is given, constrain the sum: (A + B + C) == TOTAL_VALUE.
+
+2. Variable Mapping:
+   - Map entities to attribute values (Entity -> Slot/Day/Role), never the reverse.
+
+3. Domains & Types:
+   - Single value: {{"values": [v1]}}
+   - Explicit set: {{"values": [v1, v2, ..., vN]}}
+   - Contiguous range: [0, N-1]
+
+4. Roles & Truth Values:
+   - Truth/role domain is always binary: [0, 1] (0 = false/knave, 1 = true/knight).
+   - Statement S by person X: X == (S).
+   - Never add truth/role variables to "all_different".
+
+5. Time & Calendar Indexing:
+   - Order days and positions chronologically: 0 to N-1.
+   - Flatten sub-day slots: slot = day * K + period (K = periods per day).
+     Example (K=2): 0: Mon AM, 1: Mon PM, 2: Tue AM, 3: Tue PM, ...
+   - Slot deconstruction:
+     * Morning: A % K == 0
+     * Afternoon: A % K == 1
+     * Same day: A // K == B // K
+     * Day after: B // K == (A // K) + 1
+     * Earlier day: A // K < B // K
+
+6. Exclusivity ("all_different"):
+   - Group mutually exclusive entities in a single list: [["A", "B", "C"]].
+   - Groups must contain at least 2 variables; never emit single-variable lists.
 
 {feedback}
 """
 
 
+def is_binary_domain(domain) -> bool:
+    if isinstance(domain, list) and len(domain) == 2 and domain[0] == 0 and domain[1] == 1:
+        return True
+    if isinstance(domain, dict):
+        vals = set(domain.get("values", []))
+        return vals.issubset({0, 1}) and len(vals) > 0
+    return False
+
+
+def sanitize_all_different_binary_vars(ir: dict) -> list:
+    errors = []
+    variables = ir.get("variables", {})
+    all_diff = ir.get("all_different", [])
+
+    if not isinstance(all_diff, list):
+        return errors
+
+    cleaned_all_different = []
+
+    for idx, group in enumerate(all_diff):
+        if not isinstance(group, list):
+            continue
+
+        binary_vars = [v for v in group if v in variables and is_binary_domain(variables[v])]
+
+        if len(binary_vars) > 1:
+            errors.append(f"Remove 'all_different' from previous IR.")
+            filtered_group = [v for v in group if v not in binary_vars]
+            if len(filtered_group) > 1:
+                cleaned_all_different.append(filtered_group)
+        else:
+            cleaned_all_different.append(group)
+
+    return errors
+
+
 def formalize(problem: dict, feedback: Optional[str] = None) -> dict:
     """Ask the model for an IR encoding of the problem. `feedback` = error messages from a previous attempt."""
-    fb = f"\nYour previous encoding was rejected:\n{feedback}\nFix these problems.\n" if feedback else ""
+    fb = (
+        f"\nPREVIOUS ATTEMPT REJECTED BY VALIDATOR:\n"
+        f"{feedback}\n\n"
+        f"CRITICAL REPAIR INSTRUCTIONS:\n"
+        f"Read each error message above and fix or follow the instruction bellow \n"
+        if feedback
+        else ""
+    )
     prompt = FORMALIZER_PROMPT.format(ir_spec=IR_SPEC, text=problem["text"], feedback=fb)
     parsed, raw = llm.ask_json(prompt, IRModel, system=SYSTEM)
     return parsed.model_dump(exclude_none=True)
@@ -127,6 +167,29 @@ def find_symbols(data):
     return symbols
 
 
+def check_all_different_group_sizes(ir: dict) -> list:
+    errors = []
+    all_diff = ir.get("all_different", [])
+
+    if not isinstance(all_diff, list):
+        errors.append("'all_different' must be a list of lists.")
+        return errors
+
+    for idx, group in enumerate(all_diff):
+        if not isinstance(group, list):
+            errors.append(f"Group at index {idx} in 'all_different' is not a list: {group}")
+        elif len(group) == 1:
+            errors.append(
+                f"Single-element list found in 'all_different' at index {idx}: {group}. "
+                f"'all_different' groups must contain at least 2 distinct variables, "
+                f"or group all mutually exclusive variables together: [{group[0]}, ...]."
+            )
+        elif len(group) == 0:
+            errors.append(f"Empty list found in 'all_different' at index {idx}. Remove empty groups.")
+
+    return errors
+
+
 def validate_ir(ir: dict) -> list:
     """Return a list of human-readable error messages; an empty list means the IR is valid.
 
@@ -140,10 +203,27 @@ def validate_ir(ir: dict) -> list:
 
     errors = []
     variables = []
+    pattern = r"^[a-zA-Z_][a-zA-Z0-9_]*$"
+
+    def is_valid_variable_name(name: str) -> bool:
+        return bool(re.match(pattern, name))
+
+    def sanitize_variable_name(raw_name: str) -> str:
+        cleaned = raw_name.strip()
+        cleaned = re.sub(r"[-\s.]+", "_", cleaned)
+        cleaned = re.sub(r"[^a-zA-Z0-9_]", "", cleaned)
+        if not cleaned:
+            cleaned = "var"
+        elif cleaned[0].isdigit():
+            cleaned = "_" + cleaned
+        return cleaned
 
     # VARIABLES CHECK
     for k, v in ir["variables"].items():
         variables.append(k)
+
+        if not is_valid_variable_name(k):
+            errors.append(f"Rename variable '{k}' to '{sanitize_variable_name(k)}' to make it a valid identifier.")
 
         if isinstance(v, dict):
             vals = v.get("values")
@@ -158,7 +238,7 @@ def validate_ir(ir: dict) -> list:
         elif isinstance(v, list) and all(isinstance(x, int) for x in v):
             if len(v) == 2:
                 if v[0] > v[1]:
-                    errors.append(f"Swap bounds for '{k}' so lower bound comes first: [{v[1]}, {v[0]}].")
+                    errors.append(f"Swap bounds for '{k}' variable ONLY so lower bound comes first: [{v[1]}, {v[0]}].")
             elif len(v) == 1:
                 errors.append(
                     f"Change '{k}' from single-element list {v} to discrete format: '{k}': {{\"values\": {v}}}."
@@ -185,34 +265,22 @@ def validate_ir(ir: dict) -> list:
     if uncreated_vars:
         errors.append(f"Add variables to 'variables': {', '.join(uncreated_vars)} ")
 
-    # SANITY CHECK: PIGEONHOLE PRINCIPLE IN ALL_DIFFERENT
-    for group in ir.get("all_different", []):
-        valid_members = [v for v in group if v in ir.get("variables", {})]
-        if len(valid_members) <= 1:
-            continue
+    _err = check_all_different_group_sizes(ir)
+    if _err:
+        errors.append(*_err)
 
-        all_possible_vals = set()
-        for v in valid_members:
-            dom = ir["variables"][v]
-            if isinstance(dom, list) and len(dom) == 2 and dom[0] <= dom[1]:
-                all_possible_vals.update(range(dom[0], dom[1] + 1))
-            elif isinstance(dom, dict) and isinstance(dom.get("values"), list):
-                all_possible_vals.update(dom["values"])
+    _err = sanitize_all_different_binary_vars(ir)
+    if _err:
+        errors.append(*_err)
 
-        if len(valid_members) > len(all_possible_vals):
-            errors.append(
-                f"Unsatisfiable 'all_different' constraint: {len(valid_members)} variables {valid_members} "
-                f"compete for only {len(all_possible_vals)} distinct values ({sorted(list(all_possible_vals))}). "
-                f"Remove this group from 'all_different'."
-            )
+    # try:
+    #     a = ir_solver.build(ir)
+    # except ValueError as e:
+    #     errors.append(str(e))
+    # except:
+    #     pass
 
-    try:
-        a = ir_solver.build(ir)
-    except ValueError as e:
-        errors.append(str(e))
-    except:
-        pass
-
+    print(errors)
     return errors
 
 
