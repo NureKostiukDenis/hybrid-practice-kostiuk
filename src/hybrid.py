@@ -50,7 +50,7 @@ String and symbolic values are FORBIDDEN: {{values: ["A", "B"]}}, ["A", "B"].
 Inside arithmetic a comparison counts as 1 (true) or 0 (false), e.g. "(A == 1) + (B == 1) == 1".
 Variable names must be identifiers: letters, digits and underscores only, no spaces, e.g., meeting_kickoff, role_alice."""
 
-SYSTEM = "You translate logic puzzles into a formal constraint representation. You answer only with JSON. You arent a programmer just translator."
+SYSTEM = "You translate logic puzzles into a formal constraint representation. You answer only with JSON."
 
 # TODO(team): this prompt is the heart of the hybrid pipeline. Things worth considering:
 #   * how should the model choose variables? (one variable per entity? per attribute value?)
@@ -58,7 +58,7 @@ SYSTEM = "You translate logic puzzles into a formal constraint representation. Y
 #   * facts that the text does not state but that the model must know (calendar, working week, ...);
 #   * a worked example (few-shot) on a puzzle that is NOT in your set;
 #   * how to encode knights and knaves: a statement S by person X becomes  X == (S).
-FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle. Output ONLY valid JSON matching the IR specification.
+FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle. Output ONLY valid JSON matching the IR specification completed by Encoding Puzzle Rules.
 
 Puzzle:
 {text}
@@ -67,37 +67,46 @@ Puzzle:
 
 Encoding Puzzle Rules:
 
-1. Logic & Arithmetic:
-   - Use relational operators (<, <=, >, >=, +, -, //, %) instead of enumerating concrete cases.
-   - If a TOTAL VALUE is given, constrain the sum: (A + B + C) == TOTAL_VALUE.
+Notation definitions:
+- A, B, C: Variables representing the flat integer slot assigned to an entity (e.g., 0, 1, 2, ...).
+- K: Constant integer for the number of slots/periods per day (e.g., K = 2 for morning and afternoon).
+- total_slots: Total number of slots available across the entire schedule.
+- total_value: Total number of attributes.
+
+1. Logic, Arithmetic:
+- Use relational operators (<, <=, >, >=, +, -, //, %) instead of enumerating concrete cases.
+- If a total_value is given, constrain the sum: (A + B + C) == total_value.
 
 2. Variable Mapping:
-   - Map entities to attribute values (Entity -> Slot/Day/Role), never the reverse.
-
-3. Domains & Types:
-   - Single value: {{"values": [v1]}}
-   - Explicit set: {{"values": [v1, v2, ..., vN]}}
-   - Contiguous range: [0, N-1]
+- Map entities to attribute values (Entity -> Slot/Day/Role/Attribute), never the reverse.
+- Do NOT skip items that are omitted in the clues but listed in the valid options (e.g., unmentioned names or destinations).
+    
+3. Domains, Types:
+- Single value: {{"values": [A]}}.
+- Explicit set: {{"values": [A, B, C]}}.
+- Contiguous range: [0, N-1].
 
 4. Roles & Truth Values:
-   - Truth/role domain is always binary: [0, 1] (0 = false/knave, 1 = true/knight).
-   - Statement S by person X: X == (S).
-   - Never add truth/role variables to "all_different".
+- Truth/role domain is always binary: [0, 1] (0 = false/knave, 1 = true/knight).
+- Statement S by person X: X == (S).
+- Never add truth/role variables to "all_different".
 
-5. Time & Calendar Indexing:
-   - Order days and positions chronologically: 0 to N-1.
-   - Flatten sub-day slots: slot = day * K + period (K = periods per day).
-     Example (K=2): 0: Mon AM, 1: Mon PM, 2: Tue AM, 3: Tue PM, ...
-   - Slot deconstruction:
-     * Morning: A % K == 0
-     * Afternoon: A % K == 1
-     * Same day: A // K == B // K
-     * Day after: B // K == (A // K) + 1
-     * Earlier day: A // K < B // K
+5. Time, Calendar, and Week Indexing:
+- Define K as the total number of periods (slots) per day,
+- Express flattened sub-day slots as: slot = day * K + period.
+- Express "Morning slot" as: slot % K == 0.
+- Express "Afternoon slot" as: slot % K == 1.
+- Express "Same day" as: A // K == B // K.
+- Express "Day after" as: B // K == (A // K) + 1.
+- Express "Earlier day" as: A // K < B // K.
+- Express "First slot of the week" as: slot == 0.
+- Express "Last slot of the week" as: slot == total_slots - 1.
 
 6. Exclusivity ("all_different"):
-   - Group mutually exclusive entities in a single list: [["A", "B", "C"]].
-   - Groups must contain at least 2 variables; never emit single-variable lists.
+- Group mutually exclusive entities in a single list: [["A", "B", "C"]].
+- NEVER mix different categories in the same "all_different" group.
+- Groups must contain at least 2 variables; never emit single-variable lists.
+
 
 {feedback}
 """
@@ -145,7 +154,7 @@ def formalize(problem: dict, feedback: Optional[str] = None) -> dict:
         f"\nPREVIOUS ATTEMPT REJECTED BY VALIDATOR:\n"
         f"{feedback}\n\n"
         f"CRITICAL REPAIR INSTRUCTIONS:\n"
-        f"Read each error message above and fix or follow the instruction bellow \n"
+        f"Read each instruction/error message above and fix/follow instruction\n"
         if feedback
         else ""
     )
@@ -168,26 +177,28 @@ def find_symbols(data):
 
 
 def check_all_different_group_sizes(ir: dict) -> list:
-    errors = []
     all_diff = ir.get("all_different", [])
 
     if not isinstance(all_diff, list):
-        errors.append("'all_different' must be a list of lists.")
-        return errors
+        return ["Set 'all_different' to a list of lists."]
 
-    for idx, group in enumerate(all_diff):
-        if not isinstance(group, list):
-            errors.append(f"Group at index {idx} in 'all_different' is not a list: {group}")
-        elif len(group) == 1:
-            errors.append(
-                f"Single-element list found in 'all_different' at index {idx}: {group}. "
-                f"'all_different' groups must contain at least 2 distinct variables, "
-                f"or group all mutually exclusive variables together: [{group[0]}, ...]."
-            )
-        elif len(group) == 0:
-            errors.append(f"Empty list found in 'all_different' at index {idx}. Remove empty groups.")
+    invalid_groups = [g for g in all_diff if not isinstance(g, list) or len(g) <= 1]
+    if not invalid_groups:
+        return []
 
-    return errors
+    collected_vars = [g[0] for g in all_diff if isinstance(g, list) and len(g) == 1]
+
+    if len(collected_vars) > 1:
+        merged_example = f'"all_different": [{collected_vars}]'
+        return [
+            f"Do not split variables into separate single-element lists. "  # noqa: ISC004
+            f"Combine all mutually exclusive entities into one shared group: {merged_example}."
+        ]
+
+    return [
+        "Each list in 'all_different' must contain at least 2 distinct variables. "  # noqa: ISC004
+        'Combine mutually exclusive variables into a single group like ["var1", "var2", ...] and remove empty or single-element groups.'
+    ]
 
 
 def validate_ir(ir: dict) -> list:
@@ -223,7 +234,9 @@ def validate_ir(ir: dict) -> list:
         variables.append(k)
 
         if not is_valid_variable_name(k):
-            errors.append(f"Rename variable '{k}' to '{sanitize_variable_name(k)}' to make it a valid identifier.")
+            errors.append(
+                f'Replace \'{k}\': {{"values": {v}}} with \'{sanitize_variable_name(k)}\': {{"values": {v}}} in "variables".'
+            )
 
         if isinstance(v, dict):
             vals = v.get("values")
@@ -250,7 +263,7 @@ def validate_ir(ir: dict) -> list:
 
         else:
             errors.append(
-                f"Define '{k}' as either an integer range [lo, hi] or discrete values '{k}': {{\"values\": [v1, v2, ...]}}."
+                f"Define '{k}' as either an integer range [min, max] or discrete values '{k}': {{\"values\": [v1, v2, vN]}}."
             )
 
     # USAGE
@@ -267,11 +280,11 @@ def validate_ir(ir: dict) -> list:
 
     _err = check_all_different_group_sizes(ir)
     if _err:
-        errors.append(*_err)
+        errors.extend(_err)
 
     _err = sanitize_all_different_binary_vars(ir)
     if _err:
-        errors.append(*_err)
+        errors.extend(_err)
 
     # try:
     #     a = ir_solver.build(ir)
