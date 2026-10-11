@@ -3,7 +3,7 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T00:51:59",
+ "timestamp": "2026-10-12T01:13:53",
  "answer": {
   "status": "unique",
   "solution": {
@@ -50,7 +50,7 @@
       "(hlib <= daryna) == 1",
       "(daryna >= 4) == 1",
       "(bohdan > vira) == 1",
-      "(bohdan + vira + hlib + daryna == 10) == 1"
+      "bohdan + vira + hlib + daryna == 10"
      ]
     },
     "errors": []
@@ -69,6 +69,6 @@
   }
  },
  "error": null,
- "seconds": 2.9,
+ "seconds": 2.8,
  "llm_calls": 2
 }

@@ -70,13 +70,15 @@ Puzzle Rules:
 - Binary value (truth values, roles, or boolean states): [0, 1]
 - Explicit set of choices: {{"values": [a, b, c]}}
 - Unknown entities: Full candidate range [0, total_slots - 1], calculated strictly from the current puzzle dimensions (never guess or copy from examples).
-- Naming convention: Use exact entity and item names as provided in the puzzle text.
+- Use the EXACT names of entities, items, destinations, and categories as they appear in the puzzle text.
+- NEVER create generic numbered tokens like person_1, item_1, destination_1, etc.
+- Map every individual option mentioned in the puzzle to a single key in "variables".
 
 2. Binary Domain:
 - Truth/role domain is always binary: 0 = false/knave, 1 = true/knight.
 - Statement S by person X: X == (S).
 - Binary variables are equal.
-- "all_different" is forbidden for those cases.
+- "all_different" option is forbidden for this case.
 
 3. Time, Calendar and Week Puzzle:
 - Variable domains MUST strictly use the format [0, total_slots - 1].

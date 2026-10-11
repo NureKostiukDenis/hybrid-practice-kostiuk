@@ -3,7 +3,7 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T00:42:45",
+ "timestamp": "2026-10-12T01:16:40",
  "answer": {
   "status": "unique",
   "solution": {
@@ -68,7 +68,7 @@
       "architecture // 2 == demo // 2",
       "legal // 2 == architecture // 2 + 1",
       "marketing // 2 == legal // 2",
-      "legal % 2 == 1",
+      "legal % 2 == 0",
       "hiring // 2 < demo // 2",
       "hiring // 2 < 1"
      ]
@@ -85,13 +85,13 @@
     "hiring": 1,
     "architecture": 2,
     "demo": 3,
-    "marketing": 4,
-    "legal": 5,
+    "marketing": 5,
+    "legal": 4,
     "wrapup": 7
    }
   }
  },
  "error": null,
- "seconds": 3.4,
+ "seconds": 3.2,
  "llm_calls": 2
 }

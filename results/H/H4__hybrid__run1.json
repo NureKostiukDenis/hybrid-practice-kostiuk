@@ -3,7 +3,7 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T00:52:09",
+ "timestamp": "2026-10-12T01:16:57",
  "answer": {
   "status": "unique",
   "solution": {
@@ -18,32 +18,30 @@
    {
     "ir": {
      "variables": {
-      "taisiia": [
+      "Taisiia": [
        0,
        1
       ],
-      "ustym": [
+      "Ustym": [
        0,
        1
       ],
-      "fedora": [
+      "Fedora": [
        0,
        1
       ]
      },
      "all_different": [
       [
-       "taisiia",
-       "ustym",
-       "fedora"
+       "Taisiia",
+       "Ustym",
+       "Fedora"
       ]
      ],
      "constraints": [
-      "taisiia == 0",
-      "(ustym == 1) + (fedora == 1) == 1",
-      "taisiia == (taisiia == 1)",
-      "ustym == (ustym == 1)",
-      "fedora == (fedora == 1)"
+      "Taisiia == 0",
+      "Ustym == 1",
+      "Fedora == 0"
      ]
     },
     "errors": [
@@ -56,13 +54,13 @@
    "n_solutions": 1,
    "objective": null,
    "first_solution": {
-    "taisiia": 0,
-    "ustym": 1,
-    "fedora": 0
+    "Taisiia": 0,
+    "Ustym": 1,
+    "Fedora": 0
    }
   }
  },
  "error": null,
- "seconds": 3.3,
+ "seconds": 2.6,
  "llm_calls": 3
 }

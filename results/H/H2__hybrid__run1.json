@@ -3,11 +3,140 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T00:51:04",
- "answer": null,
- "trace": null,
- "error": "HybridError: solver rejected the IR: unknown variable: neighbour_carrier",
- "traceback": "Traceback (most recent call last):\n  File \"/home/chrum/nure/tops/pz1/src/hybrid.py\", line 402, in solve\n    result = run_solver(ir)\n  File \"/home/chrum/nure/tops/pz1/src/hybrid.py\", line 348, in run_solver\n    return ir_solver.solve(ir, limit=1)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 119, in solve\n    zv, cons, conv = build(ir)\n                     ~~~~~^^^^\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 113, in build\n    cons.append(_as_bool(conv(ast.parse(c, mode=\"eval\"))))\n                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 33, in __call__\n    return m(node)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 36, in _Expression\n    return self(n.body)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 33, in __call__\n    return m(node)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 75, in _Compare\n    parts, left = [], self(n.left)\n                      ~~~~^^^^^^^^\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 33, in __call__\n    return m(node)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 61, in _BinOp\n    a, b = _as_int(self(n.left)), _as_int(self(n.right))\n                                          ~~~~^^^^^^^^^\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 33, in __call__\n    return m(node)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 77, in _Compare\n    right = self(rnode)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 33, in __call__\n    return m(node)\n  File \"/home/chrum/nure/tops/pz1/src/ir_solver.py\", line 40, in _Name\n    raise ValueError(f\"unknown variable: {n.id}\")\nValueError: unknown variable: neighbour_carrier\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/chrum/nure/tops/pz1/src/run.py\", line 41, in run_one\n    out = PIPELINES[name].solve(problem)\n  File \"/home/chrum/nure/tops/pz1/src/hybrid.py\", line 404, in solve\n    raise HybridError(f\"solver rejected the IR: {e}\") from e\nhybrid.HybridError: solver rejected the IR: unknown variable: neighbour_carrier\n",
- "seconds": 8.0,
+ "timestamp": "2026-10-12T01:16:46",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "carriage1": [
+       0,
+       4
+      ],
+      "carriage2": [
+       0,
+       4
+      ],
+      "carriage3": [
+       0,
+       4
+      ],
+      "carriage4": [
+       0,
+       4
+      ],
+      "Kharyton": [
+       0,
+       4
+      ],
+      "Tsvitana": [
+       0,
+       4
+      ],
+      "Ustyna": [
+       0,
+       4
+      ],
+      "Dnipro": [
+       0,
+       4
+      ],
+      "Lviv": [
+       0,
+       4
+      ],
+      "history_book_reader": [
+       0,
+       4
+      ],
+      "fantasy_book_reader": [
+       0,
+       4
+      ],
+      "backpack_carrier": [
+       0,
+       4
+      ],
+      "suitcase_carrier": [
+       0,
+       4
+      ],
+      "guitar_case_carrier": [
+       0,
+       4
+      ],
+      "poetry_reader": [
+       0,
+       4
+      ],
+      "Kyiv_traveler": [
+       0,
+       4
+      ],
+      "Lviv_traveler": [
+       0,
+       4
+      ]
+     },
+     "all_different": [
+      [
+       "carriage1",
+       "carriage2",
+       "carriage3",
+       "carriage4"
+      ],
+      [
+       "Kharyton",
+       "Tsvitana",
+       "Ustyna",
+       "Dnipro",
+       "Lviv"
+      ],
+      [
+       "history_book_reader",
+       "fantasy_book_reader"
+      ],
+      [
+       "backpack_carrier",
+       "suitcase_carrier"
+      ],
+      [
+       "poetry_reader",
+       "Kyiv_traveler",
+       "Lviv_traveler"
+      ]
+     ],
+     "constraints": [
+      "(carriage1 == 1) == 1",
+      "(Kharyton == 2) == 1",
+      "(Tsvitana == backpack_carrier) + (Tsvitana == Ustyna) == 1",
+      "(Tsvitana < Lviv) == 1",
+      "(suitcase_carrier == 3) == 1",
+      "(Lviv == suitcase_carrier) + (Lviv == Ustyna) == 1",
+      "(Lviv < Dnipro) == 1",
+      "(Lviv < Kharyton) == 1",
+      "(Kharyton == poetry_reader) == 1",
+      "(Kharyton == Kyiv_traveler) + (Kharyton == Lviv_traveler) == 1",
+      "(Lviv_traveler == Lviv) + (Lviv_traveler == Dnipro) == 1",
+      "(Lviv_traveler == Lviv) + (Lviv_traveler == fantasy_book_reader) == 1"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 5.5,
  "llm_calls": 1
 }
