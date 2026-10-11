@@ -40,13 +40,13 @@ class IRModel(BaseModel):
 # Compact IR description for the model. You may edit it, but keep it consistent with ir_solver.py.
 IR_SPEC = """IR format (JSON):
 {
-  "variables": {"<name>": [min, max]  or  {"values": [v1, v2, ...]}},     integer variables and their domains
-  "all_different": [["<name>", ...], ...],                                 OPTIONAL: groups whose values must all differ
-  "constraints": ["<expression>", ...],                                    every expression must be true
-  "objective": {"maximize": "<expression>"}  or  {"minimize": "<expression>"}   OPTIONAL: ONLY for optimisation problems
+  "variables": {"<name>": [min, max]  or  {"values": [v1, v2, ...]}}, integer variables and their domains
+  "all_different": [["<name>", ...], ...], OPTIONAL: groups whose values must all differ
+  "constraints": ["<expression>", ...], every expression must be true
+  "objective": {"maximize": "<expression>"}  or  {"minimize": "<expression>"} OPTIONAL: ONLY for optimization problems
 }
 Expressions may use: integer numbers, variable names, + - * // %, == != < <= > >=, and, or, not, abs(), parentheses.
-String and symbolic values are FORBIDDEN: {{values: ["A", "B"]}}, ["A", "B"].
+String and symbolic values are FORBIDDEN.
 Inside arithmetic a comparison counts as 1 (true) or 0 (false), e.g. "(A == 1) + (B == 1) == 1".
 Variable names must be identifiers: letters, digits and underscores only, no spaces, e.g., meeting_kickoff, role_alice."""
 
@@ -58,54 +58,98 @@ SYSTEM = "You translate logic puzzles into a formal constraint representation. Y
 #   * facts that the text does not state but that the model must know (calendar, working week, ...);
 #   * a worked example (few-shot) on a puzzle that is NOT in your set;
 #   * how to encode knights and knaves: a statement S by person X becomes  X == (S).
-FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle. Output ONLY valid JSON matching the IR specification completed by Encoding Puzzle Rules.
+FORMALIZER_PROMPT = """Translate the Puzzle into the IR format JSON. Do not solve the puzzle.
+Puzzle: {text}
 
-Puzzle:
-{text}
 
 {ir_spec}
 
-Encoding Puzzle Rules:
+Puzzle Rules:
+1. Variable Domains & Mapping:
+- Fixed/Absolute value (explicitly assigned by a clue): {{"values": [x]}}
+- Binary value (truth values, roles, or boolean states): [0, 1]
+- Explicit set of choices: {{"values": [a, b, c]}}
+- Unknown entities: Full candidate range [0, total_slots - 1], calculated strictly from the current puzzle dimensions (never guess or copy from examples).
+- Naming convention: Use exact entity and item names as provided in the puzzle text.
 
-Notation definitions:
-- A, B, C: Variables representing the flat integer slot assigned to an entity (e.g., 0, 1, 2, ...).
-- K: Constant integer for the number of slots/periods per day (e.g., K = 2 for morning and afternoon).
-- total_slots: Total number of slots available across the entire schedule.
-- total_value: Total number of attributes.
-
-1. Logic, Arithmetic:
-- Use relational operators (<, <=, >, >=, +, -, //, %) instead of enumerating concrete cases.
-- If a total_value is given, constrain the sum: (A + B + C) == total_value.
-
-2. Variable Mapping:
-- Map entities to attribute values (Entity -> Slot/Day/Role/Attribute), never the reverse.
-- Do NOT skip items that are omitted in the clues but listed in the valid options (e.g., unmentioned names or destinations).
-    
-3. Domains, Types:
-- Single value: {{"values": [A]}}.
-- Explicit set: {{"values": [A, B, C]}}.
-- Contiguous range: [0, N-1].
-
-4. Roles & Truth Values:
-- Truth/role domain is always binary: [0, 1] (0 = false/knave, 1 = true/knight).
+2. Binary Domain:
+- Truth/role domain is always binary: 0 = false/knave, 1 = true/knight.
 - Statement S by person X: X == (S).
-- Never add truth/role variables to "all_different".
+- Binary variables are equal.
+- "all_different" is forbidden for those cases.
 
-5. Time, Calendar, and Week Indexing:
-- Define K as the total number of periods (slots) per day,
-- Express flattened sub-day slots as: slot = day * K + period.
-- Express "Morning slot" as: slot % K == 0.
-- Express "Afternoon slot" as: slot % K == 1.
-- Express "Same day" as: A // K == B // K.
-- Express "Day after" as: B // K == (A // K) + 1.
-- Express "Earlier day" as: A // K < B // K.
-- Express "First slot of the week" as: slot == 0.
-- Express "Last slot of the week" as: slot == total_slots - 1.
+3. Time, Calendar and Week Puzzle:
+- Variable domains MUST strictly use the format [0, total_slots - 1].
+- K represents periods per day (e.g., K = 2 for Morning and Afternoon).
+- NEVER create dummy variables like: slot, total_slots, K, morning, afternoon inside "variables".
+- Create variables for every entity/meeting/item listed in the puzzle.
+- "First slot of the week": variable == 0.
+- "Last slot of the week": variable == total_slots - 1.
+- "Morning slot": variable % K == 0.
+- "Afternoon slot": variable % K == 1.
+- "Same day": A // K == B // K.
+- "Day after": B // K == (A // K) + 1.
+- "Earlier day": A // K < B // K.
+  
+  
+Examples:
+1. Example:
 
-6. Exclusivity ("all_different"):
-- Group mutually exclusive entities in a single list: [["A", "B", "C"]].
-- NEVER mix different categories in the same "all_different" group.
-- Groups must contain at least 2 variables; never emit single-variable lists.
+Puzzle: Four books stand on a shelf in positions 1 to 4 from left to right: a dictionary, an atlas, a novel and a cookbook.
+1. The atlas stands at one of the two ends of the shelf.
+2. The novel stands immediately to the right of the dictionary.
+3. The cookbook is not next to the atlas.
+4. The atlas is somewhere to the left of the novel.
+Question: What is the order of the books?
+Answer:
+{{
+  "variables": {{
+    "dictionary": [0, 4],
+    "atlas": [0, 4],
+    "novel": [0, 4],
+    "cookbook": [0, 4]
+  }},
+  "all_different": [["dictionary", "atlas", "novel", "cookbook"]],
+  "constraints": [
+    "(atlas == 0) + (atlas == 4) == 1",
+    "(novel == dictionary + 1) == 1",
+    "(cookbook != atlas) == 1",
+    "(atlas < novel) == 1"
+  ]
+}}
+
+2. Example:
+
+Puzzle: Six meetings — Planning, Design review, Budget, Hiring, Security review and Retro — take place from Monday to Wednesday. Each day has a morning slot and an afternoon slot, and each meeting takes one slot; all six slots are used.
+1. Retro is the last meeting of the week.
+2. Planning and Design review are on the same day, with Planning first.
+3. Budget is held in a morning slot.
+4. Security review is held on the day after Budget.
+5. Hiring is not on Monday.
+6. Budget is not on the same day as Planning.
+Question: Which slot does each meeting take?
+Answer:
+{{
+  "all_different": [
+    [
+      "planning",
+      "design_review",
+      "budget",
+      "hiring",
+      "security_review",
+      "retro"
+    ]
+  ],
+  "constraints": [
+    "retro == 5",
+    "planning // 2 == design_review // 2",
+    "planning < design_review",
+    "budget % 2 == 0",
+    "security_review // 2 == (budget // 2) + 1",
+    "hiring // 2 > 0",
+    "budget // 2 != planning // 2"
+  ]
+}}
 
 
 {feedback}
@@ -138,7 +182,7 @@ def sanitize_all_different_binary_vars(ir: dict) -> list:
         binary_vars = [v for v in group if v in variables and is_binary_domain(variables[v])]
 
         if len(binary_vars) > 1:
-            errors.append(f"Remove 'all_different' from previous IR.")
+            errors.append("Remove 'all_different' from previous IR.")
             filtered_group = [v for v in group if v not in binary_vars]
             if len(filtered_group) > 1:
                 cleaned_all_different.append(filtered_group)
@@ -149,11 +193,9 @@ def sanitize_all_different_binary_vars(ir: dict) -> list:
 
 
 def formalize(problem: dict, feedback: Optional[str] = None) -> dict:
-    """Ask the model for an IR encoding of the problem. `feedback` = error messages from a previous attempt."""
     fb = (
-        f"\nPREVIOUS ATTEMPT REJECTED BY VALIDATOR:\n"
+        f"\nPrevious attempt was rejected though errors.\nInstructions:\n"
         f"{feedback}\n\n"
-        f"CRITICAL REPAIR INSTRUCTIONS:\n"
         f"Read each instruction/error message above and fix/follow instruction\n"
         if feedback
         else ""
@@ -190,10 +232,7 @@ def check_all_different_group_sizes(ir: dict) -> list:
 
     if len(collected_vars) > 1:
         merged_example = f'"all_different": [{collected_vars}]'
-        return [
-            f"Do not split variables into separate single-element lists. "  # noqa: ISC004
-            f"Combine all mutually exclusive entities into one shared group: {merged_example}."
-        ]
+        return [f"Combine all mutually exclusive entities into one shared group: {merged_example}."]
 
     return [
         "Each list in 'all_different' must contain at least 2 distinct variables. "  # noqa: ISC004

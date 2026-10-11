@@ -1,0 +1,116 @@
+{
+ "problem": "E3",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-11T21:33:06",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "Klara": [
+       0,
+       1
+      ],
+      "Leonid": [
+       0,
+       1
+      ],
+      "Myroslava": [
+       0,
+       1
+      ],
+      "Nazar": [
+       0,
+       1
+      ],
+      "Oksen": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "Klara",
+       "Leonid",
+       "Myroslava",
+       "Nazar",
+       "Oksen"
+      ]
+     ],
+     "constraints": [
+      "(Oksen == 1) + (Leonid == 1) + (Nazar == 1) + (Myroslava == 1) + (Klara == 1) == 1",
+      "Nazar > 0",
+      "Oksen < 5",
+      "Leonid < Nazar",
+      "Myroslava > Klara",
+      "Nazar != 4",
+      "Myroslava != 0"
+     ]
+    },
+    "errors": [
+     "Remove 'all_different' from previous IR."
+    ]
+   },
+   {
+    "ir": {
+     "variables": {
+      "Klara": [
+       0,
+       1
+      ],
+      "Leonid": [
+       0,
+       1
+      ],
+      "Myroslava": [
+       0,
+       1
+      ],
+      "Nazar": [
+       0,
+       1
+      ],
+      "Oksen": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "Klara",
+       "Leonid",
+       "Myroslava",
+       "Nazar",
+       "Oksen"
+      ]
+     ],
+     "constraints": [
+      "(Oksen == 3) + (Leonid == (Klara + Myroslava)) + (Nazar != 5) + (Myroslava != 1) + (Nazar != 5)",
+      "(Klara == 1) + (Myroslava == 1) + (Oksen == 3) + (Leonid == (Klara + Myroslava)) + (Nazar != 5) + (Myroslava != 1) + (Nazar != 5)",
+      "(Oksen == 3) + (Leonid == (Klara + Myroslava)) + (Nazar != 5) + (Myroslava != 1) + (Nazar != 5)",
+      "(Nazar != 5) + (Myroslava != 1) + (Nazar != 5)"
+     ]
+    },
+    "errors": [
+     "Remove 'all_different' from previous IR."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 4.8,
+ "llm_calls": 2
+}

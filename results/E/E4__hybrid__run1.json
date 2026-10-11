@@ -1,0 +1,125 @@
+{
+ "problem": "E4",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-11T21:32:41",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "Arsen": [
+       0,
+       1
+      ],
+      "Vlas": [
+       0,
+       1
+      ],
+      "Hlafira": [
+       0,
+       1
+      ],
+      "Danylo": [
+       0,
+       1
+      ],
+      "Nuts": [
+       0,
+       1
+      ],
+      "Apples": [
+       0,
+       1
+      ],
+      "Cheese": [
+       0,
+       1
+      ],
+      "Cookies": [
+       0,
+       1
+      ],
+      "Pastries": [
+       0,
+       1
+      ],
+      "Mail": [
+       0,
+       1
+      ],
+      "Plants": [
+       0,
+       1
+      ],
+      "Printer": [
+       0,
+       1
+      ],
+      "Tasks": [
+       0,
+       1
+      ],
+      "Snacks": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "Arsen",
+       "Vlas",
+       "Hlafira",
+       "Danylo",
+       "Nuts",
+       "Apples",
+       "Cheese",
+       "Cookies",
+       "Pastries",
+       "Mail",
+       "Plants",
+       "Printer",
+       "Tasks",
+       "Snacks"
+      ]
+     ],
+     "constraints": [
+      "Arsen == 1",
+      "Vlas == 1",
+      "Vlas == Nuts",
+      "Nuts == Wednesday",
+      "Arsen == Thursday",
+      "Hlafira + Vlas == 1",
+      "Hlafira + Vlas == 1",
+      "Danylo == Plants - 1",
+      "Nuts == Cookies - 1",
+      "Pastries == Backup - 1",
+      "Nuts == Cookies - 1",
+      "Mail == Plants - 1",
+      "Printer == Plants - 1",
+      "Tasks == 1",
+      "Snacks == 1"
+     ]
+    },
+    "errors": [
+     "Remove 'all_different' from previous IR."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 10.8,
+ "llm_calls": 2
+}

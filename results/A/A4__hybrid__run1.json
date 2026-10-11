@@ -1,0 +1,61 @@
+{
+ "problem": "A4",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-11T21:54:10",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "anya": [
+       0,
+       1
+      ],
+      "borys": [
+       0,
+       1
+      ],
+      "vika": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "anya",
+       "borys",
+       "vika"
+      ]
+     ],
+     "constraints": [
+      "(anya == 1) + (borys == 1) + (vika == 1) == 1",
+      "(anya == 1) + (borys == 0) + (vika == 0) == 0",
+      "(anya == 0) + (borys == 1) + (vika == 0) == 1",
+      "(anya == 0) + (borys == 0) + (vika == 1) == 1",
+      "(borys == 1) + (anya == borys) == 1",
+      "(borys == 0) + (vika == borys) == 1"
+     ]
+    },
+    "errors": [
+     "Remove 'all_different' from previous IR."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 4.5,
+ "llm_calls": 2
+}

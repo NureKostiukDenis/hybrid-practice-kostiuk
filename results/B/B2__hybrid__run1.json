@@ -1,0 +1,120 @@
+{
+ "problem": "B2",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-11T21:49:02",
+ "answer": {
+  "status": "unique",
+  "solution": {
+   "N": 0,
+   "O": 1,
+   "D": 0,
+   "E": 0,
+   "G": 9,
+   "R": 0,
+   "A": 9,
+   "P": 0,
+   "H": 0
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "NODE": [
+       0,
+       9
+      ],
+      "EDGE": [
+       0,
+       9
+      ],
+      "GRAPH": [
+       0,
+       9
+      ],
+      "O": [
+       1,
+       9
+      ],
+      "N": [
+       0,
+       9
+      ],
+      "E": [
+       0,
+       9
+      ],
+      "D": [
+       0,
+       9
+      ],
+      "A": [
+       1,
+       9
+      ],
+      "G": [
+       0,
+       9
+      ],
+      "R": [
+       0,
+       9
+      ],
+      "I": [
+       0,
+       9
+      ],
+      "P": [
+       0,
+       9
+      ],
+      "T": [
+       0,
+       9
+      ]
+     },
+     "all_different": [
+      [
+       "NODE",
+       "EDGE",
+       "GRAPH"
+      ]
+     ],
+     "constraints": [
+      "(NODE % 2 == 0) == 1",
+      "(O > N) == 1",
+      "(A == 9) == 1"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "unique",
+   "n_solutions": 1,
+   "objective": null,
+   "first_solution": {
+    "NODE": 2,
+    "EDGE": 0,
+    "GRAPH": 1,
+    "O": 1,
+    "N": 0,
+    "E": 0,
+    "D": 0,
+    "A": 9,
+    "G": 0,
+    "R": 0,
+    "I": 0,
+    "P": 0,
+    "T": 0
+   }
+  }
+ },
+ "error": null,
+ "seconds": 4.7,
+ "llm_calls": 2
+}

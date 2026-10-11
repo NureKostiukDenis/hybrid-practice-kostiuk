@@ -1,0 +1,74 @@
+{
+ "problem": "H3",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-12T00:51:59",
+ "answer": {
+  "status": "unique",
+  "solution": {
+   "Bohdan": 2,
+   "Vira": 1,
+   "Hlib": 3,
+   "Daryna": 4
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "bohdan": [
+       1,
+       4
+      ],
+      "vira": [
+       1,
+       4
+      ],
+      "hlib": [
+       1,
+       4
+      ],
+      "daryna": [
+       1,
+       4
+      ]
+     },
+     "all_different": [
+      [
+       "bohdan",
+       "vira",
+       "hlib",
+       "daryna"
+      ]
+     ],
+     "constraints": [
+      "(bohdan <= 2) == 1",
+      "(vira < hlib) == 1",
+      "(hlib <= daryna) == 1",
+      "(daryna >= 4) == 1",
+      "(bohdan > vira) == 1",
+      "(bohdan + vira + hlib + daryna == 10) == 1"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "unique",
+   "n_solutions": 1,
+   "objective": null,
+   "first_solution": {
+    "bohdan": 2,
+    "vira": 1,
+    "hlib": 3,
+    "daryna": 4
+   }
+  }
+ },
+ "error": null,
+ "seconds": 2.9,
+ "llm_calls": 2
+}

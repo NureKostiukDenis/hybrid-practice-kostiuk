@@ -1,0 +1,66 @@
+{
+ "problem": "C1",
+ "pipeline": "hybrid",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-11T21:40:15",
+ "answer": {
+  "status": "unique",
+  "solution": {
+   "Olha": "knight",
+   "Pylyp": "knave",
+   "Rostyslav": "knave"
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "olha": [
+       0,
+       1
+      ],
+      "pylyp": [
+       0,
+       1
+      ],
+      "rostyslav": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "olha",
+       "pylyp",
+       "rostyslav"
+      ]
+     ],
+     "constraints": [
+      "(olha == 1) + (pylyp == olha) + (rostyslav == pylyp == 0) == 1",
+      "(olha == 1) + (rostyslav == 1) + (rostyslav == pylyp == 0) == 1",
+      "(olha == 1) + (pylyp == 1) + (rostyslav == 0) == 1"
+     ]
+    },
+    "errors": [
+     "Remove 'all_different' from previous IR."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "unique",
+   "n_solutions": 1,
+   "objective": null,
+   "first_solution": {
+    "olha": 1,
+    "pylyp": 0,
+    "rostyslav": 0
+   }
+  }
+ },
+ "error": null,
+ "seconds": 3.6,
+ "llm_calls": 3
+}
