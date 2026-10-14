@@ -40,7 +40,7 @@ class IRModel(BaseModel):
 # Compact IR description for the model. You may edit it, but keep it consistent with ir_solver.py.
 IR_SPEC = """IR format (JSON):
 {
-  "variables": {"<name>": [min, max]  or  {"values": [v1, v2, ...]}}, integer variables and their domains
+  "variables": {"<name>": [min, max] for CONTINUOS VALUES or {"values": [a, b, c]} for EXPLIT SET or {"values": [a]} for ONLY ONE or [0, 1] }, integer variables and their domains
   "all_different": [["<name>", ...], ...], OPTIONAL: groups whose values must all differ
   "constraints": ["<expression>", ...], every expression must be true
   "objective": {"maximize": "<expression>"}  or  {"minimize": "<expression>"} OPTIONAL: ONLY for optimization problems
@@ -64,85 +64,83 @@ Puzzle: {text}
 
 {ir_spec}
 
-Puzzle Rules:
+
 1. Variable Domains & Mapping:
-- Fixed/Absolute value (explicitly assigned by a clue): {{"values": [x]}}
-- Binary value (truth values, roles, or boolean states): [0, 1]
-- Explicit set of choices: {{"values": [a, b, c]}}
 - Unknown entities: Full candidate range [0, total_slots - 1], calculated strictly from the current puzzle dimensions (never guess or copy from examples).
-- Use the EXACT names of entities, items, destinations, and categories as they appear in the puzzle text.
-- NEVER create generic numbered tokens like person_1, item_1, destination_1, etc.
+- Define ALL of entities, items, destinations, and categories as they appear in the puzzle text.
 - Map every individual option mentioned in the puzzle to a single key in "variables".
 
-2. Binary Domain:
-- Truth/role domain is always binary: 0 = false/knave, 1 = true/knight.
-- Statement S by person X: X == (S).
-- Binary variables are equal.
-- "all_different" option is forbidden for this case.
 
-3. Time, Calendar and Week Puzzle:
+2. True / False Puzzle Logic (Is A Attribute?, Is B Attribute?):
+- Use binary variables: 0 = false, 1 = true.
+- Dont use "all_different" field. 
+- "A and B": A and B.
+- "A or B": A or B.
+- "Not A": not A.
+- "If A, then B": not A or B.
+- "A if and only if B": A == B.
+- "A and B cannot both be true": A + B <= 1.
+- "At least N conditions are true": A + B + ... >= N.
+- "At most N conditions are true": A + B + ... <= N.
+- "Exactly N conditions are true": A + B + ... == N.
+- "Exactly one of A and B is true": A + B == 1.
+
+
+3. Time,Slot, Week Puzzle (When?):
 - Variable domains MUST strictly use the format [0, total_slots - 1].
 - K represents periods per day (e.g., K = 2 for Morning and Afternoon).
 - NEVER create dummy variables like: slot, total_slots, K, morning, afternoon inside "variables".
 - Create variables for every entity/meeting/item listed in the puzzle.
-- "First slot of the week": variable == 0.
-- "Last slot of the week": variable == total_slots - 1.
-- "Morning slot": variable % K == 0.
-- "Afternoon slot": variable % K == 1.
-- "Same day": A // K == B // K.
-- "Day after": B // K == (A // K) + 1.
-- "Earlier day": A // K < B // K.
-  
-  
-Examples:
-1. Example:
+- "First slot of the week": "variable == 0".
+- "Last slot of the week": "variable == total_slots - 1".
+- "Morning slot": "variable % K == 0".
+- "Afternoon slot": "variable % K == 1".
+- "Same day": "A // K == B // K".
+- "Day after": "B // K == (A // K) + 1".
+- "Earlier day": "A // K < B // K".
 
-Puzzle: Four books stand on a shelf in positions 1 to 4 from left to right: a dictionary, an atlas, a novel and a cookbook.
+
+1. Example Logic Puzzle (What is order?):
+Four books stand on a shelf in positions 1 to 4 from left to right: a dictionary, an atlas, a novel and a cookbook.
 1. The atlas stands at one of the two ends of the shelf.
 2. The novel stands immediately to the right of the dictionary.
 3. The cookbook is not next to the atlas.
 4. The atlas is somewhere to the left of the novel.
-Question: What is the order of the books?
+What is the order of the books?
 Answer:
 {{
-  "variables": {{
+"variables": {{
     "dictionary": [0, 4],
     "atlas": [0, 4],
     "novel": [0, 4],
     "cookbook": [0, 4]
-  }},
-  "all_different": [["dictionary", "atlas", "novel", "cookbook"]],
-  "constraints": [
-    "(atlas == 0) + (atlas == 4) == 1",
-    "(novel == dictionary + 1) == 1",
-    "(cookbook != atlas) == 1",
+}},
+"all_different": [["dictionary", "atlas", "novel", "cookbook"]],
+    "constraints": [
+    "atlas == 0 or atlas == 4",
+    "novel == dictionary + 1",
+    "abs(cookbook - atlas) != 1",
     "(atlas < novel) == 1"
-  ]
+]
 }}
 
-2. Example:
 
-Puzzle: Six meetings — Planning, Design review, Budget, Hiring, Security review and Retro — take place from Monday to Wednesday. Each day has a morning slot and an afternoon slot, and each meeting takes one slot; all six slots are used.
+2. Example Slots Puzzle (When? Which slot does fit?):
+Six meetings — Planning, Design review, Budget, Hiring, Security review and Retro — take place from Monday to Wednesday. Each day has a morning slot and an afternoon slot, and each meeting takes one slot.
 1. Retro is the last meeting of the week.
 2. Planning and Design review are on the same day, with Planning first.
 3. Budget is held in a morning slot.
 4. Security review is held on the day after Budget.
 5. Hiring is not on Monday.
 6. Budget is not on the same day as Planning.
-Question: Which slot does each meeting take?
+Which slot does each meeting take?
 Answer:
 {{
-  "all_different": [
-    [
-      "planning",
-      "design_review",
-      "budget",
-      "hiring",
-      "security_review",
-      "retro"
-    ]
-  ],
-  "constraints": [
+"variables": {{
+    ...
+}},
+"all_different": [["planning","design_review","budget","hiring","security_review","retro"]],
+"constraints": [
     "retro == 5",
     "planning // 2 == design_review // 2",
     "planning < design_review",
@@ -150,7 +148,7 @@ Answer:
     "security_review // 2 == (budget // 2) + 1",
     "hiring // 2 > 0",
     "budget // 2 != planning // 2"
-  ]
+]
 }}
 
 
@@ -183,8 +181,8 @@ def sanitize_all_different_binary_vars(ir: dict) -> list:
 
         binary_vars = [v for v in group if v in variables and is_binary_domain(variables[v])]
 
-        if len(binary_vars) > 1:
-            errors.append("Remove 'all_different' from previous IR.")
+        if len(binary_vars) > 1 and ir.get("objective", None) is None:
+            # errors.append('Remove "all_different": [...] field from previous IR JSON.')
             filtered_group = [v for v in group if v not in binary_vars]
             if len(filtered_group) > 1:
                 cleaned_all_different.append(filtered_group)
