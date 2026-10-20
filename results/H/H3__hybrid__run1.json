@@ -3,14 +3,14 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T01:13:53",
+ "timestamp": "2026-10-20T14:53:02",
  "answer": {
-  "status": "unique",
+  "status": "multiple",
   "solution": {
    "Bohdan": 2,
-   "Vira": 1,
-   "Hlib": 3,
-   "Daryna": 4
+   "Vira": 0,
+   "Hlib": 1,
+   "Daryna": 7
   },
   "objective": null
  },
@@ -19,56 +19,56 @@
    {
     "ir": {
      "variables": {
-      "bohdan": [
-       1,
-       4
+      "Bohdan": [
+       0,
+       10
       ],
-      "vira": [
-       1,
-       4
+      "Vira": [
+       0,
+       10
       ],
-      "hlib": [
-       1,
-       4
+      "Hlib": [
+       0,
+       10
       ],
-      "daryna": [
-       1,
-       4
+      "Daryna": [
+       0,
+       10
       ]
      },
      "all_different": [
       [
-       "bohdan",
-       "vira",
-       "hlib",
-       "daryna"
+       "Bohdan",
+       "Vira",
+       "Hlib",
+       "Daryna"
       ]
      ],
      "constraints": [
-      "(bohdan <= 2) == 1",
-      "(vira < hlib) == 1",
-      "(hlib <= daryna) == 1",
-      "(daryna >= 4) == 1",
-      "(bohdan > vira) == 1",
-      "bohdan + vira + hlib + daryna == 10"
+      "Bohdan <= 2",
+      "Vira < Hlib",
+      "Hlib <= Daryna",
+      "Daryna >= 4",
+      "Bohdan > Vira",
+      "Bohdan + Vira + Hlib + Daryna == 10"
      ]
     },
     "errors": []
    }
   ],
   "solver": {
-   "status": "unique",
-   "n_solutions": 1,
+   "status": "multiple",
+   "n_solutions": 2,
    "objective": null,
    "first_solution": {
-    "bohdan": 2,
-    "vira": 1,
-    "hlib": 3,
-    "daryna": 4
+    "Bohdan": 2,
+    "Vira": 0,
+    "Hlib": 1,
+    "Daryna": 7
    }
   }
  },
  "error": null,
- "seconds": 2.8,
+ "seconds": 2.3,
  "llm_calls": 2
 }

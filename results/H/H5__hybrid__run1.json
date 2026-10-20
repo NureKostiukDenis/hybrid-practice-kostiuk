@@ -3,12 +3,12 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T01:17:02",
+ "timestamp": "2026-10-20T14:53:14",
  "answer": {
-  "status": "unique",
+  "status": "multiple",
   "solution": {
-   "Vlad": "ThinkPad",
-   "Yana": "Dell",
+   "Vlad": "Dell",
+   "Yana": "ThinkPad",
    "Zoriana": "MacBook"
   },
   "objective": null
@@ -20,17 +20,26 @@
      "variables": {
       "vlad": [
        0,
-       1,
        2
       ],
       "yana": [
        0,
-       1,
        2
       ],
       "zoriana": [
        0,
-       1,
+       2
+      ],
+      "thinkpad": [
+       0,
+       2
+      ],
+      "macbook": [
+       0,
+       2
+      ],
+      "dell": [
+       0,
        2
       ]
      },
@@ -43,28 +52,28 @@
      ],
      "constraints": [
       "yana != 2",
-      "zoriana == 1"
+      "zoriana == 1",
+      "vlad + yana + zoriana == 3"
      ]
     },
-    "errors": [
-     "Format 'vlad' as continuous range [0, 2] or discrete list 'vlad': {\"values\": [0, 1, 2]}.",
-     "Format 'yana' as continuous range [0, 2] or discrete list 'yana': {\"values\": [0, 1, 2]}.",
-     "Format 'zoriana' as continuous range [0, 2] or discrete list 'zoriana': {\"values\": [0, 1, 2]}."
-    ]
+    "errors": []
    }
   ],
   "solver": {
-   "status": "unique",
-   "n_solutions": 1,
+   "status": "multiple",
+   "n_solutions": 2,
    "objective": null,
    "first_solution": {
     "vlad": 2,
     "yana": 0,
-    "zoriana": 1
+    "zoriana": 1,
+    "thinkpad": 0,
+    "macbook": 0,
+    "dell": 0
    }
   }
  },
  "error": null,
- "seconds": 3.0,
- "llm_calls": 3
+ "seconds": 1.9,
+ "llm_calls": 2
 }

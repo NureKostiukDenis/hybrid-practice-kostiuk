@@ -1,0 +1,79 @@
+{
+ "problem": "H5",
+ "pipeline": "hybrid",
+ "run": 2,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:53:15",
+ "answer": {
+  "status": "multiple",
+  "solution": {
+   "Vlad": "Dell",
+   "Yana": "ThinkPad",
+   "Zoriana": "MacBook"
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "vlad": [
+       0,
+       2
+      ],
+      "yana": [
+       0,
+       2
+      ],
+      "zoriana": [
+       0,
+       2
+      ],
+      "thinkpad": [
+       0,
+       2
+      ],
+      "macbook": [
+       0,
+       2
+      ],
+      "dell": [
+       0,
+       2
+      ]
+     },
+     "all_different": [
+      [
+       "vlad",
+       "yana",
+       "zoriana"
+      ]
+     ],
+     "constraints": [
+      "yana != 2",
+      "zoriana == 1",
+      "vlad + yana + zoriana == 3"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "multiple",
+   "n_solutions": 2,
+   "objective": null,
+   "first_solution": {
+    "vlad": 2,
+    "yana": 0,
+    "zoriana": 1,
+    "thinkpad": 0,
+    "macbook": 0,
+    "dell": 0
+   }
+  }
+ },
+ "error": null,
+ "seconds": 1.7,
+ "llm_calls": 2
+}

@@ -67,7 +67,6 @@ Puzzle: {text}
 
 1. Variable Domains & Mapping:
 - Unknown entities: Full candidate range [0, total_slots - 1], calculated strictly from the current puzzle dimensions (never guess or copy from examples).
-- Define ALL of entities, items, destinations, and categories as they appear in the puzzle text.
 - Map every individual option mentioned in the puzzle to a single key in "variables".
 
 
@@ -87,7 +86,6 @@ Puzzle: {text}
 
 
 3. Time,Slot, Week Puzzle (When?):
-- Variable domains MUST strictly use the format [0, total_slots - 1].
 - K represents periods per day (e.g., K = 2 for Morning and Afternoon).
 - NEVER create dummy variables like: slot, total_slots, K, morning, afternoon inside "variables".
 - Create variables for every entity/meeting/item listed in the puzzle.
@@ -182,7 +180,7 @@ def sanitize_all_different_binary_vars(ir: dict) -> list:
         binary_vars = [v for v in group if v in variables and is_binary_domain(variables[v])]
 
         if len(binary_vars) > 1 and ir.get("objective", None) is None:
-            # errors.append('Remove "all_different": [...] field from previous IR JSON.')
+            errors.append('Remove "all_different": [...] field from previous IR JSON.')
             filtered_group = [v for v in group if v not in binary_vars]
             if len(filtered_group) > 1:
                 cleaned_all_different.append(filtered_group)
@@ -325,27 +323,18 @@ def validate_ir(ir: dict) -> list:
     if _err:
         errors.extend(_err)
 
-    # try:
-    #     a = ir_solver.build(ir)
-    # except ValueError as e:
-    #     errors.append(str(e))
-    # except:
-    #     pass
+    try:
+        a = ir_solver.build(ir)
+    except ValueError as e:
+        errors.append(str(e))
+    except:
+        pass
 
-    print(errors)
     return errors
 
 
-def run_solver(ir: dict) -> dict:
-    """Run Z3 on the IR. Returns {"status": ..., "solutions": [...], "objective": ...}.
-
-    TODO(team): with limit=1 the solver stops after the first solution, so it reports "unique" even when
-    several solutions exist. Think about what limit you need to tell "unique" from "multiple".
-    """
-
-    # print(ir)
-
-    return ir_solver.solve(ir, limit=1)
+def run_solver(ir: dict, limit: int = 2) -> dict:
+    return ir_solver.solve(ir, limit=limit)
 
 
 PRESENT_PROMPT = """A puzzle has been solved by a constraint solver. Rewrite the solver's result in the required

@@ -3,7 +3,7 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T01:16:46",
+ "timestamp": "2026-10-20T14:52:53",
  "answer": {
   "status": "none",
   "solution": {},
@@ -14,19 +14,19 @@
    {
     "ir": {
      "variables": {
-      "carriage1": [
+      "carriage_1": [
        0,
        4
       ],
-      "carriage2": [
+      "carriage_2": [
        0,
        4
       ],
-      "carriage3": [
+      "carriage_3": [
        0,
        4
       ],
-      "carriage4": [
+      "carriage_4": [
        0,
        4
       ],
@@ -81,49 +81,48 @@
       "Lviv_traveler": [
        0,
        4
+      ],
+      "thriller_reader": [
+       0,
+       4
       ]
      },
      "all_different": [
       [
-       "carriage1",
-       "carriage2",
-       "carriage3",
-       "carriage4"
+       "carriage_1",
+       "carriage_2",
+       "carriage_3",
+       "carriage_4"
       ],
       [
        "Kharyton",
        "Tsvitana",
        "Ustyna",
        "Dnipro",
-       "Lviv"
-      ],
-      [
+       "Lviv",
        "history_book_reader",
-       "fantasy_book_reader"
-      ],
-      [
+       "fantasy_book_reader",
        "backpack_carrier",
-       "suitcase_carrier"
-      ],
-      [
+       "suitcase_carrier",
+       "guitar_case_carrier",
        "poetry_reader",
        "Kyiv_traveler",
-       "Lviv_traveler"
+       "Lviv_traveler",
+       "thriller_reader"
       ]
      ],
      "constraints": [
-      "(carriage1 == 1) == 1",
-      "(Kharyton == 2) == 1",
-      "(Tsvitana == backpack_carrier) + (Tsvitana == Ustyna) == 1",
-      "(Tsvitana < Lviv) == 1",
-      "(suitcase_carrier == 3) == 1",
-      "(Lviv == suitcase_carrier) + (Lviv == Ustyna) == 1",
-      "(Lviv < Dnipro) == 1",
-      "(Lviv < Kharyton) == 1",
-      "(Kharyton == poetry_reader) == 1",
-      "(Kharyton == Kyiv_traveler) + (Kharyton == Lviv_traveler) == 1",
-      "(Lviv_traveler == Lviv) + (Lviv_traveler == Dnipro) == 1",
-      "(Lviv_traveler == Lviv) + (Lviv_traveler == fantasy_book_reader) == 1"
+      "carriage_1 == 1",
+      "Kharyton == 2",
+      "Tsvitana + backpack_carrier == 1",
+      "Tsvitana < Lviv",
+      "suitcase_carrier == 3",
+      "Lviv_traveler + suitcase_carrier == 1",
+      "Lviv_traveler < Lviv",
+      "Lviv_traveler + thriller_reader == 1",
+      "Kharyton == 0 or Kharyton == 4",
+      "Kharyton + Lviv_traveler == 1",
+      "thriller_reader + Lviv_traveler == 1"
      ]
     },
     "errors": []
@@ -137,6 +136,6 @@
   }
  },
  "error": null,
- "seconds": 5.5,
+ "seconds": 4.7,
  "llm_calls": 1
 }

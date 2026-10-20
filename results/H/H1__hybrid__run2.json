@@ -1,0 +1,96 @@
+{
+ "problem": "H1",
+ "pipeline": "hybrid",
+ "run": 2,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:52:51",
+ "answer": {
+  "status": "multiple",
+  "solution": {
+   "Kickoff": "Mon morning",
+   "Hiring": "Mon afternoon",
+   "Architecture": "Tue morning",
+   "Demo": "Tue afternoon",
+   "Marketing": "Wed morning",
+   "Legal": "Wed afternoon",
+   "Wrap-up": "Thu afternoon"
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "kickoff": [
+       0,
+       7
+      ],
+      "hiring": [
+       0,
+       7
+      ],
+      "architecture": [
+       0,
+       7
+      ],
+      "demo": [
+       0,
+       7
+      ],
+      "marketing": [
+       0,
+       7
+      ],
+      "legal": [
+       0,
+       7
+      ],
+      "wrap_up": [
+       0,
+       7
+      ]
+     },
+     "all_different": [
+      [
+       "kickoff",
+       "hiring",
+       "architecture",
+       "demo",
+       "marketing",
+       "legal",
+       "wrap_up"
+      ]
+     ],
+     "constraints": [
+      "kickoff == 0",
+      "wrap_up == 7",
+      "architecture // 2 == demo // 2",
+      "legal // 2 == architecture // 2 + 1",
+      "marketing // 2 == legal // 2",
+      "legal % 2 == 1",
+      "hiring // 2 < demo // 2"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "multiple",
+   "n_solutions": 2,
+   "objective": null,
+   "first_solution": {
+    "kickoff": 0,
+    "hiring": 1,
+    "architecture": 2,
+    "demo": 3,
+    "marketing": 4,
+    "legal": 5,
+    "wrap_up": 7
+   }
+  }
+ },
+ "error": null,
+ "seconds": 2.6,
+ "llm_calls": 2
+}

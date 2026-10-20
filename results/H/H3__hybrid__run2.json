@@ -1,0 +1,65 @@
+{
+ "problem": "H3",
+ "pipeline": "hybrid",
+ "run": 2,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:53:05",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "bohdan": [
+       0,
+       2
+      ],
+      "vira": [
+       0,
+       2
+      ],
+      "hlib": [
+       0,
+       2
+      ],
+      "daryna": [
+       4,
+       2
+      ]
+     },
+     "all_different": [
+      [
+       "bohdan",
+       "vira",
+       "hlib",
+       "daryna"
+      ]
+     ],
+     "constraints": [
+      "bohdan <= 2",
+      "vira < hlib",
+      "hlib <= daryna",
+      "daryna >= 4",
+      "bohdan > vira"
+     ]
+    },
+    "errors": [
+     "Swap bounds for 'daryna' variable ONLY so lower bound comes first: [2, 4]."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 3.2,
+ "llm_calls": 2
+}

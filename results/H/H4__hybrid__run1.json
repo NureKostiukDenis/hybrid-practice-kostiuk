@@ -3,7 +3,7 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T01:16:57",
+ "timestamp": "2026-10-20T14:53:08",
  "answer": {
   "status": "unique",
   "solution": {
@@ -39,13 +39,14 @@
       ]
      ],
      "constraints": [
-      "Taisiia == 0",
-      "Ustym == 1",
-      "Fedora == 0"
+      "Taisiia == 1 or Taisiia == 0",
+      "Ustym == 1 or Ustym == 0",
+      "Fedora == 1 or Fedora == 0",
+      "Taisiia + Ustym + Fedora == 1"
      ]
     },
     "errors": [
-     "Remove 'all_different' from previous IR."
+     "Remove \"all_different\": [...] field from previous IR JSON."
     ]
    }
   ],
@@ -54,13 +55,13 @@
    "n_solutions": 1,
    "objective": null,
    "first_solution": {
-    "Taisiia": 0,
-    "Ustym": 1,
+    "Taisiia": 1,
+    "Ustym": 0,
     "Fedora": 0
    }
   }
  },
  "error": null,
- "seconds": 2.6,
+ "seconds": 3.0,
  "llm_calls": 3
 }

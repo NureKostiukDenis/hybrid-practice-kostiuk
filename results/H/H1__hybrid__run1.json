@@ -3,9 +3,9 @@
  "pipeline": "hybrid",
  "run": 1,
  "model": "qwen2.5:3b",
- "timestamp": "2026-10-12T01:16:40",
+ "timestamp": "2026-10-20T14:52:48",
  "answer": {
-  "status": "unique",
+  "status": "multiple",
   "solution": {
    "Kickoff": "Mon morning",
    "Hiring": "Mon afternoon",
@@ -46,7 +46,7 @@
        0,
        7
       ],
-      "wrapup": [
+      "wrap_up": [
        0,
        7
       ]
@@ -59,39 +59,38 @@
        "demo",
        "marketing",
        "legal",
-       "wrapup"
+       "wrap_up"
       ]
      ],
      "constraints": [
       "kickoff == 0",
-      "wrapup == 7",
+      "wrap_up == 7",
       "architecture // 2 == demo // 2",
       "legal // 2 == architecture // 2 + 1",
       "marketing // 2 == legal // 2",
-      "legal % 2 == 0",
-      "hiring // 2 < demo // 2",
-      "hiring // 2 < 1"
+      "legal % 2 == 1",
+      "hiring // 2 < demo // 2"
      ]
     },
     "errors": []
    }
   ],
   "solver": {
-   "status": "unique",
-   "n_solutions": 1,
+   "status": "multiple",
+   "n_solutions": 2,
    "objective": null,
    "first_solution": {
     "kickoff": 0,
     "hiring": 1,
-    "architecture": 2,
-    "demo": 3,
-    "marketing": 5,
-    "legal": 4,
-    "wrapup": 7
+    "architecture": 3,
+    "demo": 2,
+    "marketing": 4,
+    "legal": 5,
+    "wrap_up": 7
    }
   }
  },
  "error": null,
- "seconds": 3.2,
+ "seconds": 3.0,
  "llm_calls": 2
 }

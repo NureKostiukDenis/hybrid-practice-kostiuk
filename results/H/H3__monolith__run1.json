@@ -1,0 +1,23 @@
+{
+ "problem": "H3",
+ "pipeline": "monolith",
+ "run": 1,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:54:33",
+ "answer": {
+  "status": "unique",
+  "solution": {
+   "Bohdan": 2,
+   "Vira": 1,
+   "Hlib": 3,
+   "Daryna": 4
+  },
+  "objective": null
+ },
+ "trace": {
+  "reasoning": "Given the constraints, let's analyze the conditions step by step to find the number of bugs each developer fixed. We start by noting that Bohdan fixed no more than 2 bugs, and each developer fixed a unique number of bugs. Also, Vira fixed fewer bugs than Hlib, and Hlib fixed at most as many bugs as Daryna. Daryna fixed at least 4 bugs, and Bohdan fixed more bugs than Vira. Let's denote the number of bugs fixed by Bohdan, Vira, Hlib, and Daryna as B, V, H, and D respectively. The total number of bugs fixed is 10. We can start by considering the maximum and minimum possible values for B, V, H, and D. Since B ≤ 2 and D ≥ 4, the maximum possible value for B is 2. If B = 2, then V must be at least 1 and H must be at least 3. Since D must be at least 4 and V must be less than H, the only feasible solution is D = 4, H = 3, V = 1, and B = 2. This satisfies all conditions: B = 2, V = 1, H = 3, D = 4. Let's check if this solution works: 2 + 1 + 3 + 4 = 10. All conditions are satisfied. Therefore, the solution is unique."
+ },
+ "error": null,
+ "seconds": 3.4,
+ "llm_calls": 1
+}

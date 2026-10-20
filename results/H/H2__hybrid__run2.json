@@ -1,0 +1,141 @@
+{
+ "problem": "H2",
+ "pipeline": "hybrid",
+ "run": 2,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:52:58",
+ "answer": {
+  "status": "none",
+  "solution": {},
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "carriage_1": [
+       0,
+       4
+      ],
+      "carriage_2": [
+       0,
+       4
+      ],
+      "carriage_3": [
+       0,
+       4
+      ],
+      "carriage_4": [
+       0,
+       4
+      ],
+      "Kharyton": [
+       0,
+       4
+      ],
+      "Tsvitana": [
+       0,
+       4
+      ],
+      "Ustyna": [
+       0,
+       4
+      ],
+      "Dnipro": [
+       0,
+       4
+      ],
+      "Lviv": [
+       0,
+       4
+      ],
+      "history_book_reader": [
+       0,
+       4
+      ],
+      "fantasy_book_reader": [
+       0,
+       4
+      ],
+      "backpack_carrier": [
+       0,
+       4
+      ],
+      "suitcase_carrier": [
+       0,
+       4
+      ],
+      "guitar_case_carrier": [
+       0,
+       4
+      ],
+      "poetry_reader": [
+       0,
+       4
+      ],
+      "Kyiv_traveler": [
+       0,
+       4
+      ],
+      "Lviv_traveler": [
+       0,
+       4
+      ],
+      "thriller_reader": [
+       0,
+       4
+      ]
+     },
+     "all_different": [
+      [
+       "carriage_1",
+       "carriage_2",
+       "carriage_3",
+       "carriage_4"
+      ],
+      [
+       "Kharyton",
+       "Tsvitana",
+       "Ustyna",
+       "Dnipro",
+       "Lviv",
+       "history_book_reader",
+       "fantasy_book_reader",
+       "backpack_carrier",
+       "suitcase_carrier",
+       "guitar_case_carrier",
+       "poetry_reader",
+       "Kyiv_traveler",
+       "Lviv_traveler",
+       "thriller_reader"
+      ]
+     ],
+     "constraints": [
+      "carriage_1 == 1",
+      "Kharyton == 2",
+      "Tsvitana + backpack_carrier == 1",
+      "Tsvitana < Lviv",
+      "suitcase_carrier == 3",
+      "Lviv_traveler + suitcase_carrier == 1",
+      "Lviv_traveler < guitar_case_carrier",
+      "Kharyton == 0",
+      "Kharyton + Kyiv_traveler == 1",
+      "Lviv_traveler + thriller_reader == 1",
+      "thriller_reader == 4"
+     ]
+    },
+    "errors": []
+   }
+  ],
+  "solver": {
+   "status": "none",
+   "n_solutions": 0,
+   "objective": null,
+   "first_solution": null
+  }
+ },
+ "error": null,
+ "seconds": 4.4,
+ "llm_calls": 1
+}

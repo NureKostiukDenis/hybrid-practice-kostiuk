@@ -1,0 +1,67 @@
+{
+ "problem": "H4",
+ "pipeline": "hybrid",
+ "run": 2,
+ "model": "qwen2.5:3b",
+ "timestamp": "2026-10-20T14:53:11",
+ "answer": {
+  "status": "unique",
+  "solution": {
+   "Taisiia": "knave",
+   "Ustym": "knight",
+   "Fedora": "knight"
+  },
+  "objective": null
+ },
+ "trace": {
+  "attempts": [
+   {
+    "ir": {
+     "variables": {
+      "Taisiia": [
+       0,
+       1
+      ],
+      "Ustym": [
+       0,
+       1
+      ],
+      "Fedora": [
+       0,
+       1
+      ]
+     },
+     "all_different": [
+      [
+       "Taisiia",
+       "Ustym",
+       "Fedora"
+      ]
+     ],
+     "constraints": [
+      "Taisiia == 1 or Taisiia == 0",
+      "Ustym == 1 or Ustym == 0",
+      "Fedora == 1 or Fedora == 0",
+      "Taisiia + Ustym + Fedora == 1"
+     ]
+    },
+    "errors": [
+     "Remove \"all_different\": [...] field from previous IR JSON."
+    ]
+   }
+  ],
+  "solver": {
+   "status": "unique",
+   "n_solutions": 1,
+   "objective": null,
+   "first_solution": {
+    "Taisiia": 1,
+    "Ustym": 0,
+    "Fedora": 0
+   }
+  }
+ },
+ "error": null,
+ "seconds": 2.6,
+ "llm_calls": 3
+}
